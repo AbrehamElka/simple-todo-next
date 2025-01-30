@@ -6,6 +6,7 @@ import { FiEdit } from "react-icons/fi";
 import { FaRegTrashAlt } from "react-icons/fa";
 import Modal from "./Modal";
 import { editTodo } from "@/api";
+import { deleteTodo } from "@/api";
 import { useRouter } from "next/navigation";
 interface TaskProps {
     task: ITask
@@ -13,7 +14,9 @@ interface TaskProps {
 const Task:React.FC<TaskProps> = ({ task }) => {
     const [openEditModal, setOpenEditModal] = useState<boolean>(false);
     const [taskToEdit, setTaskToEdit] = useState<string>(task.text);
+    const [openDeleteMOdal, setOpenDeleteModal] = useState<boolean>(false);
     const router = useRouter();
+
     const handelEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const updatedTask = await editTodo({
@@ -22,6 +25,12 @@ const Task:React.FC<TaskProps> = ({ task }) => {
         });
         setTaskToEdit(taskToEdit);
         setOpenEditModal(false);
+        router.refresh();
+    }
+
+    const handelDeleteSubmit = async (id: string) => {
+        await deleteTodo(id);
+        setOpenDeleteModal(false);
         router.refresh();
     }
   return (
@@ -43,13 +52,24 @@ const Task:React.FC<TaskProps> = ({ task }) => {
                                 setTaskToEdit(e.target.value)
                             } />
 
-                        <button type="submit" className="btn">Submit</button>
+                            <button type="submit" className="btn">Submit</button>
                         </div>
                     </form>
                 </Modal>
 
 
-                <FaRegTrashAlt size={25} className="text-red-500"/>
+                <FaRegTrashAlt size={25} className="text-red-500" onClick={() => setOpenDeleteModal(true)} cursor="pointer"/>
+                <Modal open={openDeleteMOdal} setOpen={setOpenDeleteModal}>
+                        <h3 className='font-bold text-lg'>Are You Sure?</h3>
+                        <div className="modal-action">
+                            <button 
+                                type="submit" 
+                                className="btn"
+                                onClick={() => handelDeleteSubmit(task.id)}
+                                >
+                                    Yes</button>
+                        </div>
+                </Modal>
             </td>
         </tr>
   )
